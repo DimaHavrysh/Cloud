@@ -13,7 +13,7 @@ app.config['MYSQL_HOST'] = 'yamanote.proxy.rlwy.net'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'RVbjplKtkutAppRliRMvQiBMMcEMhNJQ'
 app.config['MYSQL_DB'] = 'cloud'
-app.config['MYSQL_PORT'] = '17675'
+app.config['MYSQL_PORT'] = 17675
 
 # Ініціалізація MySQL
 mysql = MySQL(app)
