@@ -1,0 +1,136 @@
+{% extends 'home_page.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Гаражі підприємства</h1>
+
+    <!-- Форма пошуку -->
+    <form method="POST" action="{{ url_for('garage', info_type=info_type) }}" class="mb-4">
+        <div class="form-group">
+            <label for="category">Категорія транспортного засобу:</label>
+            <input type="text" class="form-control" id="category" name="category" placeholder="Пошук за категорією">
+        </div>
+        <div class="form-group">
+            <label for="garage_status">Статус гаража:</label>
+            <select class="form-control" id="garage_status" name="garage_status">
+                <option value="">Всі</option>
+                <option value="1">Є гараж</option>
+                <option value="0">Немає гаража</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Пошук</button>
+    </form>
+
+    <!-- Таблиця для відображення інформації про гаражі -->
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Назва</th>
+                <th>Категорія</th>
+                <th>Статус гаража</th>
+                {% if is_admin_or_owner %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if search_results %}
+                {% for vehicle in search_results %}
+                <tr>
+                    <td>{{ vehicle.name }}</td>
+                    <td>{{ vehicle.category }}</td>
+                    <td>{{ "Є гараж" if vehicle.has_garage else "Немає гаража" }}</td>
+                    {% if is_admin_or_owner %}
+                    <td>
+                        <a href="#editModal{{ vehicle.id }}" class="btn btn-warning btn-sm" data-toggle="modal">Редагувати</a>
+                        <a href="{{ url_for('delete_garage_vehicle', id=vehicle.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Ви впевнені, що хочете видалити цей транспортний засіб?');">Видалити</a>
+                    </td>
+                    {% endif %}
+                </tr>
+
+                <!-- Модальне вікно редагування -->
+                <div class="modal fade" id="editModal{{ vehicle.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ vehicle.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ vehicle.id }}">Редагувати транспортний засіб</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="{{ url_for('edit_garage_vehicle', id=vehicle.id) }}" method="POST">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="name" style="color: black">Назва</label>
+                                        <input type="text" class="form-control" id="name" name="name" value="{{ vehicle.name }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="category" style="color: black">Категорія</label>
+                                        <input type="text" class="form-control" id="category" name="category" value="{{ vehicle.category }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="has_garage" style="color: black">Статус гаража</label>
+                                        <select class="form-control" id="has_garage" name="has_garage">
+                                            <option value="1" {% if vehicle.has_garage == 1 %}selected{% endif %}>Є гараж</option>
+                                            <option value="0" {% if vehicle.has_garage == 0 %}selected{% endif %}>Немає гаража</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Даних не знайдено</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Кнопка додавання нового транспортного засобу -->
+    {% if is_admin_or_owner %}
+    <a href="#addModal" class="btn btn-success" data-toggle="modal">Додати транспортний засіб</a>
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Додати транспортний засіб</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('add_garage_vehicle') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name" style="color: black">Назва</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category" style="color: black">Категорія</label>
+                            <input type="text" class="form-control" id="category" name="category" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="has_garage" style="color: black">Статус гаража</label>
+                            <select class="form-control" id="has_garage" name="has_garage">
+                                <option value="1">Є гараж</option>
+                                <option value="0">Немає гаража</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                        <button type="submit" class="btn btn-primary">Додати</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

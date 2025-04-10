@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="icon" href="/static/images/icon.jpg" type="image/x-icon">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Create Your Account</h2>
+        <form method="POST" action="/register">
+            <div class="form-group">
+                <label for="login" class="textcolor">Login</label>
+                <input type="text" class="form-control" id="login" name="login" required>
+            </div>
+            <div class="form-group">
+                <label for="password" class="textcolor">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <!-- Додано хибний вибір для рівня доступу, якщо не вибрано інший -->
+            <input type="hidden" name="access_right" value="guest">
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+        <div class="links mt-3">
+            <a href="/login">Back to Login</a>
+        </div>
+    </div>
+</body>
+</html>

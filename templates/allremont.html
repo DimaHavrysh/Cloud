@@ -1,0 +1,167 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<h2 class="text-center mb-4">Інформація про ремонти</h2>
+
+<!-- Кнопка для додавання запису -->
+{% if is_admin_or_owner %}
+<button type="button" class="btn btn-success mb-4" data-toggle="modal" data-target="#addRepairModal">
+    Додати новий ремонт
+</button>
+{% endif %}
+
+<!-- Форма пошуку -->
+<form method="POST" class="mb-4">
+    <div class="form-group">
+        <label for="car_brand">Марка автомобіля:</label>
+        <input type="text" class="form-control" id="car_brand" name="car_brand" placeholder="Введіть марку автомобіля">
+    </div>
+    <button type="submit" class="btn btn-primary">Пошук</button>
+</form>
+
+<!-- Таблиця ремонтів після пошуку -->
+{% if repairs_data %}
+<h3 class="mt-5">Записи ремонтів</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Марка</th>
+            <th>Модель</th>
+            <th>Дата</th>
+            <th>Вартість</th>
+            <th>Опис</th>
+            <th>Категорія</th>
+            {% if is_admin_or_owner or is_operator %}
+            <th>Дії</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for repair in repairs_data %}
+        <tr>
+            <td>{{ repair['car_brand'] }}</td>
+            <td>{{ repair['car_model'] }}</td>
+            <td>{{ repair['repair_date'] }}</td>
+            <td>{{ repair['repair_cost'] }}</td>
+            <td>{{ repair['repair_description'] }}</td>
+            <td>{{ repair['category'] }}</td>
+            {% if is_admin_or_owner or is_operator %}
+            <td>
+                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editRepairModal{{ repair['id'] }}">
+                    Редагувати
+                </button>
+                {% if is_admin_or_owner %}
+                <a href="{{ url_for('delete_repair', repair_id=repair['id']) }}" class="btn btn-danger btn-sm">Видалити</a>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Немає записів для відображення.</p>
+{% endif %}
+
+<!-- Модальне вікно для додавання -->
+<div class="modal fade" id="addRepairModal" tabindex="-1" role="dialog" aria-labelledby="addRepairModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('add_repair') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Додати новий ремонт</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="car_id" style="color: black">ID автомобіля</label>
+                        <input type="number" class="form-control" name="car_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_date" style="color: black">Дата ремонту</label>
+                        <input type="date" class="form-control" name="repair_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_cost" style="color: black">Вартість</label>
+                        <input type="number" class="form-control" name="repair_cost" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_description" style="color: black">Опис</label>
+                        <textarea class="form-control" name="repair_description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="category" style="color: black">Категорія</label>
+                        <input type="text" class="form-control" name="category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_brand" style="color: black">Марка</label>
+                        <input type="text" class="form-control" name="car_brand" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_model" style="color: black">Модель</label>
+                        <input type="text" class="form-control" name="car_model" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно для редагування -->
+{% for repair in repairs_data %}
+<div class="modal fade" id="editRepairModal{{ repair['id'] }}" tabindex="-1" role="dialog" aria-labelledby="editRepairModalLabel{{ repair['id'] }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('edit_repair', repair_id=repair['id']) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редагувати ремонт</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="car_id" style="color: black">ID автомобіля</label>
+                        <input type="number" class="form-control" name="car_id" value="{{ repair['car_id'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_date" style="color: black">Дата ремонту</label>
+                        <input type="date" class="form-control" name="repair_date" value="{{ repair['repair_date'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_cost" style="color: black">Вартість</label>
+                        <input type="number" class="form-control" name="repair_cost" step="0.01" value="{{ repair['repair_cost'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="repair_description" style="color: black">Опис</label>
+                        <textarea class="form-control" name="repair_description" required>{{ repair['repair_description'] }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="category" style="color: black">Категорія</label>
+                        <input type="text" class="form-control" name="category" value="{{ repair['category'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_brand" style="color: black">Марка</label>
+                        <input type="text" class="form-control" name="car_brand" value="{{ repair['car_brand'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_model" style="color: black">Модель</label>
+                        <input type="text" class="form-control" name="car_model" value="{{ repair['car_model'] }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

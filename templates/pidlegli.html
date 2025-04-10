@@ -1,0 +1,205 @@
+{% extends 'home_page.html' %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Список підлеглих</h2>
+
+    <!-- Форма для пошуку -->
+    <form method="POST">
+        <div class="form-group">
+            <label for="leader_name">Введіть ім'я бригадира/майстра/керівника цеху:</label>
+            <input type="text" class="form-control" id="leader_name" name="leader_name" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Пошук</button>
+    </form>
+
+    <!-- Кнопки для додавання, доступні тільки для owner або admin -->
+    {% if is_admin_or_owner %}
+    <h3 class="mt-5">Додати працівника</h3>
+    <form method="POST" action="{{ url_for('add_employee') }}">
+        <input type="text" name="first_name" placeholder="Ім'я" required autocomplete="off">
+        <input type="text" name="last_name" placeholder="Прізвище" required>
+        <input type="text" name="position" placeholder="Посада" required>
+        <input type="number" name="team_id" placeholder="ID бригади" required>
+        <button type="submit" class="btn btn-success">Додати працівника</button>
+    </form>
+
+    <h3 class="mt-5">Додати бригаду</h3>
+    <form method="POST" action="{{ url_for('add_team') }}">
+        <input type="text" name="team_name" placeholder="Назва бригади" required>
+        <input type="text" name="team_leader" placeholder="Бригадир">
+        <input type="text" name="master" placeholder="Майстер">
+        <input type="text" name="site_manager" placeholder="Керівник цеху">
+        <button type="submit" class="btn btn-success">Додати бригаду</button>
+    </form>
+    {% endif %}
+
+    <!-- Таблиця для Employee -->
+    <h3 class="mt-5">Працівники</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Працівника</th>
+                <th>Ім'я</th>
+                <th>Прізвище</th>
+                <th>Посада</th>
+                <th>Номер бригади</th>
+                {% if is_admin_or_owner %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for emp in employee_data %}
+            <tr>
+                <td>{{ emp[0] }}</td>
+                <td>{{ emp[1] }}</td>
+                <td>{{ emp[2] }}</td>
+                <td>{{ emp[3] }}</td>
+                <td>{{ emp[4] }}</td>
+                {% if is_admin_or_owner %}
+                <td>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEmployeeModal{{ emp[0] }}">
+                        Редагувати
+                    </button>
+                    <a href="{{ url_for('delete_employee', employee_id=emp[0]) }}" class="btn btn-danger btn-sm">Видалити</a>
+                </td>
+
+                <!-- Модальне вікно для редагування працівника -->
+                <div class="modal fade" id="editEmployeeModal{{ emp[0] }}" tabindex="-1" role="dialog" aria-labelledby="editEmployeeModalLabel{{ emp[0] }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editEmployeeModalLabel{{ emp[0] }}">Редагувати працівника</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('edit_employee', employee_id=emp[0]) }}">
+                                    <div class="form-group">
+                                        <label for="first_name" style="color: black">Ім'я</label>
+                                        <input type="text" class="form-control" name="first_name" value="{{ emp[1] }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="last_name" style="color: black">Прізвище</label>
+                                        <input type="text" class="form-control" name="last_name" value="{{ emp[2] }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="position" style="color: black">Посада</label>
+                                        <input type="text" class="form-control" name="position" value="{{ emp[3] }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="team_id" style="color: black">Номер бригади</label>
+                                        <input type="number" class="form-control" name="team_id" value="{{ emp[4] }}" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Таблиця для Team -->
+    <h3 class="mt-5">Бригади</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Бригади</th>
+                <th>Назва Бригади</th>
+                <th>Бригадир</th>
+                <th>Майстер</th>
+                <th>Керівник цеху</th>
+                {% if is_admin_or_owner %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in team_data %}
+            <tr>
+                <td>{{ team[0] }}</td>
+                <td>{{ team[1] }}</td>
+                <td>{{ team[2] }}</td>
+                <td>{{ team[3] }}</td>
+                <td>{{ team[4] }}</td>
+                {% if is_admin_or_owner %}
+                <td>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editTeamModal{{ team[0] }}">
+                        Редагувати
+                    </button>
+                    <a href="{{ url_for('delete_team', team_id=team[0]) }}" class="btn btn-danger btn-sm">Видалити</a>
+                </td>
+
+                <!-- Модальне вікно для редагування бригади -->
+                <div class="modal fade" id="editTeamModal{{ team[0] }}" tabindex="-1" role="dialog" aria-labelledby="editTeamModalLabel{{ team[0] }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editTeamModalLabel{{ team[0] }}">Редагувати бригаду</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('edit_team', team_id=team[0]) }}">
+                                    <div class="form-group">
+                                        <label for="team_name" style="color: black">Назва бригади</label>
+                                        <input type="text" class="form-control" name="team_name" value="{{ team[1] }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="team_leader" style="color: black">Бригадир</label>
+                                        <input type="text" class="form-control" name="team_leader" value="{{ team[2] }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="master" style="color: black">Майстер</label>
+                                        <input type="text" class="form-control" name="master" value="{{ team[3] }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="site_manager" style="color: black">Керівник цеху</label>
+                                        <input type="text" class="form-control" name="site_manager" value="{{ team[4] }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if search_results %}
+    <h3 class="mt-5">Результати пошуку</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Ім'я</th>
+                <th>Прізвище</th>
+                <th>Посада</th>
+                <th>Назва Бригади</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in search_results %}
+            <tr>
+                <td>{{ result[0] }}</td>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+</div>
+
+{% endblock %}

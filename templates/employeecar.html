@@ -1,0 +1,171 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<h2 class="text-center mb-4">Перелік водіїв</h2>
+
+<!-- Форма для пошуку -->
+<form method="GET" action="{{ url_for('employee', info_type=info_type) }}" class="mb-4">
+    <div class="form-group">
+        <label for="search_name">Пошук за ім'ям або прізвищем:</label>
+        <input type="text" class="form-control" id="search_name" name="search_name" placeholder="Введіть ім'я або прізвище" value="{{ search_name }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Пошук</button>
+</form>
+
+{% if search_name %}
+    {% if search_result %}
+    <!-- Модальне вікно результату пошуку -->
+    <div class="modal show" style="display: block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="color: black">Знайдений водій</h5>
+                    <form method="GET" action="{{ url_for('employee', info_type=info_type) }}">
+                        <button type="submit" class="close">&times;</button>
+                    </form>
+                </div>
+                <div class="modal-body">
+                    <p style="color: black"><strong>Ім'я:</strong> {{ search_result[1] }}</p>
+                    <p style="color: black"><strong>Прізвище:</strong> {{ search_result[2] }}</p>
+                    <p style="color: black"><strong>Номер ліцензії:</strong> {{ search_result[3] }}</p>
+                    <p style="color: black"><strong>Досвід:</strong> {{ search_result[4] }} роки</p>
+                    <p style="color: black"><strong>Транспорт:</strong> {{ search_result[5] }} {{ search_result[6] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">Користувача не знайдено.</div>
+    {% endif %}
+{% endif %}
+
+{% if session['access_right'] == 'admin' or session['access_right'] == 'owner' %}
+<!-- Форма для додавання -->
+<button type="button" class="btn btn-success mb-4" data-toggle="modal" data-target="#addDriverModal">
+    Додати нового водія
+</button>
+<div class="modal fade" id="addDriverModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Додати нового водія</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="first_name" style="color: black">Ім'я</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name" style="color: black">Прізвище</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="license_number" style="color: black">Номер ліцензії</label>
+                        <input type="text" class="form-control" id="license_number" name="license_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience" style="color: black">Досвід (роки)</label>
+                        <input type="number" class="form-control" id="experience" name="experience" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transport_id" style="color: black">Транспорт</label>
+                        <select class="form-control" id="transport_id" name="transport_id" required>
+                            <option value="" style="color: black">Виберіть транспорт</option>
+                            {% for transport in transport_data %}
+                            <option value="{{ transport[0] }}">{{ transport[1] }} {{ transport[2] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Додати</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Таблиця водіїв -->
+<h3 class="mt-5">Водії</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ім'я</th>
+            <th>Прізвище</th>
+            <th>Номер ліцензії</th>
+            <th>Досвід</th>
+            <th>Транспорт</th>
+            {% if session['access_right'] == 'admin' or session['access_right'] == 'owner' %}
+            <th>Дії</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for driver in driver_data %}
+        <tr>
+            <td>{{ driver[0] }}</td>
+            <td>{{ driver[1] }}</td>
+            <td>{{ driver[2] }}</td>
+            <td>{{ driver[3] }}</td>
+            <td>{{ driver[4] }}</td>
+            <td>{{ driver[5] }} {{ driver[6] }}</td>
+            {% if session['access_right'] == 'admin' or session['access_right'] == 'owner' %}
+            <td>
+                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editDriverModal{{ driver[0] }}">
+                    Редагувати
+                </button>
+                <a href="{{ url_for('delete_driver', driver_id=driver[0]) }}" class="btn btn-danger btn-sm">Видалити</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Модальні вікна для редагування -->
+{% for driver in driver_data %}
+<div class="modal fade" id="editDriverModal{{ driver[0] }}" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: black">Редагувати водія</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('edit_driver', driver_id=driver[0]) }}" method="POST">
+                    <div class="form-group">
+                        <label for="first_name" style="color: black">Ім'я</label>
+                        <input type="text" class="form-control" name="first_name" value="{{ driver[1] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name" style="color: black">Прізвище</label>
+                        <input type="text" class="form-control" name="last_name" value="{{ driver[2] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="license_number" style="color: black">Номер ліцензії</label>
+                        <input type="text" class="form-control" name="license_number" value="{{ driver[3] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience" style="color: black">Досвід (роки)</label>
+                        <input type="number" class="form-control" name="experience" value="{{ driver[4] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transport_id" style="color: black">Транспорт</label>
+                        <select class="form-control" name="transport_id" required>
+                            {% for transport in transport_data %}
+                            <option value="{{ transport[0] }}" {% if transport[0] == driver[7] %}selected{% endif %}>
+                                {{ transport[1] }} {{ transport[2] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Зберегти зміни</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

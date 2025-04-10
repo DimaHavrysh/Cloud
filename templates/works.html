@@ -1,0 +1,187 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<h2 class="text-center mb-4">Job Information</h2>
+
+<!-- Форма для пошуку -->
+<form method="POST">
+    <div class="form-group">
+        <label for="specialist_name">Specialist Name:</label>
+        <input type="text" class="form-control" id="specialist_name" name="specialist_name" placeholder="Enter specialist's name">
+    </div>
+    <div class="form-group">
+        <label for="start_date">Start Date:</label>
+        <input type="date" class="form-control" id="start_date" name="start_date">
+    </div>
+    <div class="form-group">
+        <label for="end_date">End Date:</label>
+        <input type="date" class="form-control" id="end_date" name="end_date">
+    </div>
+    <div class="form-group">
+        <label for="car_id">Car ID or Model:</label>
+        <input type="text" class="form-control" id="car_id" name="car_id" placeholder="Enter car ID or model">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<!-- Таблиця для Job Information -->
+<h3 class="mt-5">Job Records</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Specialist</th>
+            <th>Car Model</th>
+            <th>Description</th>
+            <th>Date</th>
+            {% if is_admin_or_owner %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in works_data %}
+        <tr>
+            <td>{{ row[1] }}</td>  <!-- specialist_name -->
+            <td>{{ row[2] }} {{ row[3] }}</td>  <!-- car_license_plate + car_model -->
+            <td>{{ row[4] }}</td>  <!-- description -->
+            <td>{{ row[5] }}</td>  <!-- job_date -->
+            {% if is_admin_or_owner %}
+            <td>
+                <!-- Edit button opens the modal -->
+                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editWorkModal{{ row[0] }}">
+                    Edit
+                </button>
+
+                <!-- Delete button -->
+                <a href="{{ url_for('delete_work', work_id=row[0]) }}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if is_admin_or_owner %}
+<!-- Кнопка для відкриття форми додавання нового запису -->
+<button type="button" class="btn btn-success mt-3" data-toggle="modal" data-target="#addWorkModal">Add Job</button>
+{% endif %}
+<!-- Модальне вікно для додавання нового запису -->
+<div class="modal fade" id="addWorkModal" tabindex="-1" role="dialog" aria-labelledby="addWorkModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWorkModalLabel" style="color: black">Add New Job</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Форма додавання нового запису -->
+                <form method="POST" action="{{ url_for('add_work') }}">
+                    <div class="form-group">
+                        <label for="specialist" style="color: black">Specialist Name</label>
+                        <input type="text" class="form-control" name="specialist_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_license_plate" style="color: black">Car License Plate</label>
+                        <input type="text" class="form-control" name="car_license_plate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_model" style="color: black">Car Model</label>
+                        <input type="text" class="form-control" name="car_model">
+                    </div>
+                    <div class="form-group">
+                        <label for="description" style="color: black">Description</label>
+                        <textarea class="form-control" name="description" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="job_date" style="color: black">Job Date</label>
+                        <input type="date" class="form-control" name="job_date" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Job</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Якщо результати пошуку є, відображаємо таблицю -->
+{% if search_results %}
+    <h3 class="mt-5">Search Results</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Specialist</th>
+                <th>Car Model</th>
+                <th>Description</th>
+                <th>Date</th>
+                {% if is_admin_or_owner %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in search_results %}
+            <tr>
+                <td>{{ row[1] }}</td>  <!-- specialist_name -->
+                <td>{{ row[2] }} {{ row[3] }}</td>  <!-- car_license_plate + car_model -->
+                <td>{{ row[4] }}</td>  <!-- description -->
+                <td>{{ row[5] }}</td>  <!-- job_date -->
+                {% if is_admin_or_owner %}
+                <td>
+                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editWorkModal{{ row[0] }}">
+                        Edit
+                    </button>
+
+                    <a href="{{ url_for('delete_work', work_id=row[0]) }}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No results found for the given search criteria.</p>
+{% endif %}
+
+<!-- Модальні вікна для редагування -->
+{% for row in works_data %}
+<div class="modal fade" id="editWorkModal{{ row[0] }}" tabindex="-1" role="dialog" aria-labelledby="editWorkModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editWorkModalLabel" style="color: black">Edit Job</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Форма редагування -->
+                <form method="POST" action="{{ url_for('edit_work', work_id=row[0]) }}">
+                    <div class="form-group">
+                        <label for="specialist" style="color: black">Specialist</label>
+                        <input type="text" class="form-control" name="specialist" value="{{ row[1] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_license_plate" style="color: black">Car License Plate</label>
+                        <input type="text" class="form-control" name="car_license_plate" value="{{ row[2] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="car_model" style="color: black">Car Model</label>
+                        <input type="text" class="form-control" name="car_model" value="{{ row[3] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description" style="color: black">Description</label>
+                        <input type="text" class="form-control" name="description" value="{{ row[4] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="job_date" style="color: black">Job Date</label>
+                        <input type="date" class="form-control" name="job_date" value="{{ row[5] }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Admin Panel</h1>
+
+    {% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <h2>Список користувачів</h2>
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Логін</th>
+                <th>Пароль</th>
+                <th>Роль</th>
+                {% if current_role == 'owner' %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.key_id }}</td>
+                <td>{{ user.login }}</td>
+                <td>{{ user.password }}</td>
+                <td>{{ user.access_right }}</td>
+                {% if current_role == 'owner' %}
+                <td>
+                    <!-- Видалення доступне лише для owner -->
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete_user">
+                        <input type="hidden" name="user_id" value="{{ user.key_id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if current_role == 'owner' %}
+    <!-- Додавання користувача доступне лише для owner -->
+    <h2 class="mt-5">Додати нового користувача</h2>
+    <form method="POST">
+        <input type="hidden" name="action" value="add_user">
+        <div class="mb-3">
+            <label for="login" class="form-label">Логін</label>
+            <input type="text" class="form-control" id="login" name="login" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="text" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="mb-3">
+            <label for="access_right" class="form-label">Роль</label>
+            <select class="form-select" id="access_right" name="access_right" required>
+                <option value="admin">Admin</option>
+                <option value="operator">Operator</option>
+                <option value="guest">Guest</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Додати користувача</button>
+    </form>
+    {% endif %}
+
+    <!-- Оновлення ролі доступне для admin та owner -->
+    <h2>Оновити роль користувача</h2>
+    <form method="POST">
+        <input type="hidden" name="action" value="update_role">
+        <div class="mb-3">
+            <label for="user_id" class="form-label">ID Користувача</label>
+            <input type="number" class="form-control" id="user_id" name="user_id" required>
+        </div>
+        <div class="mb-3">
+            <label for="new_role" class="form-label">Нова Роль</label>
+            <select class="form-select" id="new_role" name="new_role" required>
+                <option value="admin">Admin</option>
+                <option value="operator">Operator</option>
+                <option value="guest">Guest</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-warning">Оновити роль</button>
+    </form>
+</div>
+{% endblock %}

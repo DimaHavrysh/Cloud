@@ -1,0 +1,162 @@
+/* Центрування контенту */
+body {
+    font-family: Arial, sans-serif;
+    background-image: url("../images/background1.jpeg");
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding-top: 70px; /* Відступ для верхньої панелі */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Вирівнювання по верху */
+}
+h1{
+    color: white;
+}
+p{
+    color: white;
+}
+h2 {
+    color: #ffffff;
+    text-shadow: none;
+    z-index: 1;
+    position: relative;
+}
+
+/* Стиль для navbar */
+.navbar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 10px 20px;
+}
+
+.navbar-brand img {
+    border-radius: 50%;
+}
+
+/* Кастомний стиль для випадаючого меню з лівого боку */
+.custom-dropdown-menu {
+    position: absolute;
+    left: 0px; /* Зміщення меню вліво */
+    top: 100%; /* Відображення нижче кнопки */
+    width: 300px; /* Фіксована ширина меню */
+    background-color: #343a40; /* Тло меню */
+    border-radius: 5px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+}
+
+.custom-dropdown-menu .dropdown-item {
+    padding: 10px 20px;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.custom-dropdown-menu .dropdown-item:hover {
+    background-color: #0056b3;
+}
+
+.custom-dropdown {
+    position: relative;
+}
+
+/* Інформація про користувача */
+.navbar-nav .nav-item .dropdown-menu {
+    background-color: #343a40;
+    border: none;
+}
+
+.th{
+    color: white;
+}
+.navbar-nav .nav-item .dropdown-menu a {
+    color: #ffffff;
+}
+
+.navbar-nav .nav-item .dropdown-menu a:hover {
+    background-color: #0056b3;
+}
+
+/* Колонка з кнопками */
+.bottom-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    padding-bottom: 50px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+/* Стиль для кнопок */
+.info-btn {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #00c8ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.info-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.info-btn:active {
+    transform: scale(0.98);
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .custom-dropdown-menu {
+        left: 0; /* Меню відображатиметься в самому лівому кутку */
+        width: 100%;
+    }
+
+    .button-row {
+        flex-direction: column;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+}
+
+
+
+/* Стиль для іконки (лого) в navbar */
+.navbar-brand img {
+    border-radius: 50%; /* Зробити іконку круглою */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Додаємо ефекти при наведенні */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тінь під іконкою */
+}
+
+/* Ефект при наведенні на іконку */
+.navbar-brand img:hover {
+    transform: scale(1.1); /* Збільшуємо іконку при наведенні */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* Посилюємо тінь при наведенні */
+}
+
+/* Стиль для анімації іконки при натисканні */
+.navbar-brand img:active {
+    transform: scale(0.95); /* Легке зменшення при натисканні */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Зменшення тіні при натисканні */
+}
+
+input {
+    color: black !important;
+}

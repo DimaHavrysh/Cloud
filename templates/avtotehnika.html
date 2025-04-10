@@ -1,0 +1,207 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<h2 class="text-center mb-4">Equipment Information</h2>
+
+<!-- Кнопка для додавання нового запису -->
+{% if is_admin_or_owner %}
+<button type="button" class="btn btn-success mb-4" data-toggle="modal" data-target="#addEquipmentModal">
+    Add New Equipment
+</button>
+{% endif %}
+
+<!-- Форма для пошуку -->
+<form method="POST">
+    <div class="form-group">
+        <label for="equipment_type">Equipment Type:</label>
+        <input type="text" class="form-control" id="equipment_type" name="equipment_type" placeholder="Enter equipment type">
+    </div>
+    <div class="form-group">
+        <label for="start_date">Start Date:</label>
+        <input type="date" class="form-control" id="start_date" name="start_date">
+    </div>
+    <div class="form-group">
+        <label for="end_date">End Date:</label>
+        <input type="date" class="form-control" id="end_date" name="end_date">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<!-- Таблиця для Equipment Information -->
+<h3 class="mt-5">Equipment Records</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Equipment Type</th>
+            <th>Model</th>
+            <th>Serial Number</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Description</th>
+            {% if is_admin_or_owner %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in equipment_data %}
+        <tr>
+            <td>{{ row[1] }}</td>  <!-- equipment_type -->
+            <td>{{ row[2] }}</td>  <!-- model -->
+            <td>{{ row[3] }}</td>  <!-- serial_number -->
+            <td>{{ row[4] }}</td>  <!-- status -->
+            <td>{{ row[5] }}</td>  <!-- date -->
+            <td>{{ row[6] }}</td>  <!-- description -->
+            {% if is_admin_or_owner %}
+            <td>
+                <!-- Edit button opens the modal -->
+                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEquipmentModal{{ row[0] }}">
+                    Edit
+                </button>
+
+                <!-- Delete button -->
+                <a href="{{ url_for('delete_equipment', equipment_id=row[0]) }}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Якщо є результати пошуку, відображаємо окрему таблицю з результатами -->
+{% if search_results %}
+<h3 class="mt-5">Search Results</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Equipment Type</th>
+            <th>Model</th>
+            <th>Serial Number</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Description</th>
+            {% if is_admin_or_owner %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row[1] }}</td>  <!-- equipment_type -->
+            <td>{{ row[2] }}</td>  <!-- model -->
+            <td>{{ row[3] }}</td>  <!-- serial_number -->
+            <td>{{ row[4] }}</td>  <!-- status -->
+            <td>{{ row[5] }}</td>  <!-- date -->
+            <td>{{ row[6] }}</td>  <!-- description -->
+            {% if is_admin_or_owner %}
+            <td>
+                <!-- Edit button opens the modal -->
+                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEquipmentModal{{ row[0] }}">
+                    Edit
+                </button>
+
+                <!-- Delete button -->
+                <a href="{{ url_for('delete_equipment', equipment_id=row[0]) }}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Модальне вікно для додавання нового запису -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" role="dialog" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEquipmentModalLabel">Add New Equipment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_equipment') }}">
+                    <div class="form-group">
+                        <label for="equipment_type" style="color: black">Equipment Type</label>
+                        <input type="text" class="form-control" name="equipment_type" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="model" style="color: black">Model</label>
+                        <input type="text" class="form-control" name="model">
+                    </div>
+                    <div class="form-group">
+                        <label for="serial_number" style="color: black">Serial Number</label>
+                        <input type="text" class="form-control" name="serial_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status" style="color: black">Status</label>
+                        <select class="form-control" name="status">
+                            <option value="received">Received</option>
+                            <option value="written_off">Written Off</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date" style="color: black">Date</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description" style="color: black">Description</label>
+                        <textarea class="form-control" name="description" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Equipment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальні вікна для редагування -->
+{% for row in equipment_data %}
+<div class="modal fade" id="editEquipmentModal{{ row[0] }}" tabindex="-1" role="dialog" aria-labelledby="editEquipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEquipmentModalLabel">Edit Equipment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('edit_equipment', equipment_id=row[0]) }}">
+                    <div class="form-group">
+                        <label for="equipment_type" style="color: black">Equipment Type</label>
+                        <input type="text" class="form-control" name="equipment_type" value="{{ row[1] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="model" style="color: black">Model</label>
+                        <input type="text" class="form-control" name="model" value="{{ row[2] }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="serial_number" style="color: black">Serial Number</label>
+                        <input type="text" class="form-control" name="serial_number" value="{{ row[3] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status" style="color: black">Status</label>
+                        <select class="form-control" name="status">
+                            <option value="received">Received</option>
+                            <option value="written_off">Written Off</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date" style="color: black">Date</label>
+                        <input type="date" class="form-control" name="date" value="{{ row[5] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description" style="color: black">Description</label>
+                        <textarea class="form-control" name="description" required>{{ row[6] }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

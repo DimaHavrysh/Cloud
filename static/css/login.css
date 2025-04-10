@@ -1,0 +1,75 @@
+/* Центрування форми на екрані */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url("../images/background1.jpeg");
+    background-size: cover; /* Робить фонове зображення адаптивним */
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    background-color: #000000; /* Білий фон форми */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Легка тінь */
+    border: 3px solid #00dcf8; /* Світло-сірий бордер */
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff; /* Темний текст */
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    height: 45px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #00dcf8; /* Світло-сірий бордер */
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 10px;
+    background-color: #00c8ff; /* Синя кнопка */
+    border: white;
+    font-size: 18px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Темніший відтінок синього при наведенні */
+}
+
+.links {
+    text-align: center;
+}
+
+.links a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+.links span {
+    color: #ffffff;
+}
+
+.textcolor{
+    color: white;
+}
+

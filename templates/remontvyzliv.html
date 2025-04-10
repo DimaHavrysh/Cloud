@@ -1,0 +1,196 @@
+{% extends 'home_page.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Деталі ремонту</h1>
+
+    <!-- Форма пошуку -->
+    <form method="POST" action="{{ url_for('remontvyzliv', info_type=info_type) }}" class="mb-4">
+        <div class="form-group">
+            <label for="vehicle_category">Категорія транспортного засобу:</label>
+            <input type="text" class="form-control" id="vehicle_category" name="vehicle_category" placeholder="Пошук за категорією транспортного засобу">
+        </div>
+        <div class="form-group">
+            <label for="repaired_part">Відремонтована частина:</label>
+            <input type="text" class="form-control" id="repaired_part" name="repaired_part" placeholder="Пошук за відремонтованою частиною">
+        </div>
+        <button type="submit" class="btn btn-primary">Пошук</button>
+    </form>
+
+    <!-- Кнопка для додавання нового ремонту (видно тільки адміністраторам/власникам) -->
+    {% if is_admin_or_owner %}
+    <a href="#addModal" class="btn btn-success" data-toggle="modal">Додати нову деталь ремонту</a>
+    {% endif %}
+
+    <!-- Таблиця для відображення деталей ремонту -->
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Категорія транспортного засобу</th>
+                <th>Марка транспортного засобу</th>
+                <th>Модель транспортного засобу</th>
+                <th>Дата ремонту</th>
+                <th>Вартість ремонту</th>
+                <th>Відремонтована частина</th>
+                <th>Кількість частин</th>
+                {% if is_admin_or_owner %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if remont_details_data %}
+                <!-- Відображення деталей ремонту, якщо вони є -->
+                {% for remont in remont_details_data %}
+                <tr>
+                    <td>{{ remont.vehicle_category }}</td>
+                    <td>{{ remont.vehicle_brand }}</td>
+                    <td>{{ remont.vehicle_model }}</td>
+                    <td>{{ remont.repair_date }}</td>
+                    <td>{{ remont.repair_cost }}</td>
+                    <td>{{ remont.repaired_part }}</td>
+                    <td>{{ remont.part_quantity }}</td>
+                    {% if is_admin_or_owner %}
+                    <td>
+                        <!-- Кнопка для редагування: відкриває модальне вікно для редагування -->
+                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal-{{ remont.id }}">Редагувати</button>
+                        <!-- Кнопка для видалення -->
+                        <a href="{{ url_for('delete_remont_detail', remont_id=remont.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Ви впевнені, що хочете видалити цю деталь ремонту?')">Видалити</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Якщо є результати пошуку -->
+            {% if search_results %}
+                <!-- Відображення результатів пошуку -->
+                <tr>
+                    <th colspan="8">Результати пошуку</th>
+                </tr>
+                {% for result in search_results %}
+                <tr>
+                    <td>{{ result.vehicle_category }}</td>
+                    <td>{{ result.vehicle_brand }}</td>
+                    <td>{{ result.vehicle_model }}</td>
+                    <td>{{ result.repair_date }}</td>
+                    <td>{{ result.repair_cost }}</td>
+                    <td>{{ result.repaired_part }}</td>
+                    <td>{{ result.part_quantity }}</td>
+                    {% if is_admin_or_owner %}
+                    <td>
+                        <!-- Кнопка редагування для результатів пошуку -->
+                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editModal-{{ result.id }}">Редагувати</button>
+                        <a href="{{ url_for('delete_remont_detail', remont_id=result.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Ви впевнені, що хочете видалити цю деталь ремонту?')">Видалити</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Модальне вікно для додавання нової деталі ремонту -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Додати нову деталь ремонту</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('add_remont_detail') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="vehicle_category" style="color: black">Категорія транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_category" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_brand" style="color: black">Марка транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_brand" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_model" style="color: black">Модель транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_model" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repair_date" style="color: black">Дата ремонту</label>
+                            <input type="date" class="form-control" name="repair_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repair_cost" style="color: black">Вартість ремонту</label>
+                            <input type="number" class="form-control" name="repair_cost" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repaired_part" style="color: black">Відремонтована частина</label>
+                            <input type="text" class="form-control" name="repaired_part" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="part_quantity" style="color: black">Кількість частин</label>
+                            <input type="number" class="form-control" name="part_quantity" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                        <button type="submit" class="btn btn-primary">Додати деталь ремонту</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно для редагування деталі ремонту -->
+    {% for remont in remont_details_data %}
+    <div class="modal fade" id="editModal-{{ remont.id }}" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Редагувати деталь ремонту</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('edit_remont_detail', remont_id=remont.id) }}" method="POST">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="vehicle_category" style="color: black">Категорія транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_category" value="{{ remont.vehicle_category }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_brand" style="color: black">Марка транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_brand" value="{{ remont.vehicle_brand }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_model" style="color: black">Модель транспортного засобу</label>
+                            <input type="text" class="form-control" name="vehicle_model" value="{{ remont.vehicle_model }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repair_date" style="color: black">Дата ремонту</label>
+                            <input type="date" class="form-control" name="repair_date" value="{{ remont.repair_date }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repair_cost" style="color: black">Вартість ремонту</label>
+                            <input type="number" class="form-control" name="repair_cost" value="{{ remont.repair_cost }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repaired_part" style="color: black">Відремонтована частина</label>
+                            <input type="text" class="form-control" name="repaired_part" value="{{ remont.repaired_part }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="part_quantity" style="color: black">Кількість частин</label>
+                            <input type="number" class="form-control" name="part_quantity" value="{{ remont.part_quantity }}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                        <button type="submit" class="btn btn-primary">Оновити деталь ремонту</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

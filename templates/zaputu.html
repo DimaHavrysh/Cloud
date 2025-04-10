@@ -1,0 +1,519 @@
+{% extends 'home_page.html' %}
+{% block content %}
+<h1>Оберіть запит та введіть параметри</h1>
+
+<!-- Форма вибору запиту -->
+<form method="post">
+    <label for="query-select">Оберіть запит:</label>
+    <select id="query-select" name="query" onchange="this.form.submit()">
+        <option value="">-- Виберіть --</option>
+        <option value="query1" {% if query_type == 'query1' %}selected{% endif %}>
+            1.Одержати відомості про вантажоперевезення, виконані вказаним автомобілем протягом вказаного періоду часу.
+        </option>
+        <option value="query2" {% if query_type == 'query2' %}selected{% endif %}>
+            2.Одержати відомості про наявність гаражів загалом та для кожної категорії транспорту.
+        </option>
+        <option value="query3" {% if query_type == 'query3' %}selected{% endif %}>
+            3.Одержати дані про пробіг автотранспорту певної категорії або конкретної автомашини за вказаний день, місяць, рік.
+        </option>
+        <option value="query4">4.Одержати дані про кількість використаних для ремонту вказаних вузлів та агрегатів для транспорту вказаної категорії.</option>
+        <option value="query5">5.Одержати дані про розподіл пасажирського автотранспорту за маршрутами.</option>
+        <option value="query6">6.Одержати інформацію про кількість ремонтів та їх вартість для автотранспорту певної категорії, окремої марки автотранспорту або зазначеного автомобіля протягом вказаного періоду.</option>
+        <option value="query7" {% if query_type == 'query7' %}selected{% endif %}>7.Одержати інформацію про отриману та списану автотехніку протягом вказаного періоду часу.</option>
+        <option value="query8" {% if query_type == 'query8' %}selected{% endif %}>8.Одержати інформацію про роботи, виконані вказаним фахівцем протягом вказаного періоду загалом та стосовно конкретного автомобіля.</option>
+        <option value="query9" {% if query_type == 'query9' %}selected{% endif %}>9.Одержати перелік та загальну кількість водіїв загалом та для вказаних моделей авто.</option>
+        <option value="query10" {% if query_type == 'query10' %}selected{% endif %}>10.Одержати список підлеглих вказаного бригадира, майстра, керівника цеху.</option>
+    </select>
+
+    <!-- Поля для Запиту 7 -->
+            {% if query_type == 'query7' %}
+            <div class="form-group">
+                <h4 style="color: white">Запит 7: Отримана та списана автотехніка</h4>
+                <label for="start_date">Початкова дата:</label>
+                <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.form.get('start_date', '') }}">
+
+                <label for="end_date">Кінцева дата:</label>
+                <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.form.get('end_date', '') }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Виконати запит</button>
+            {% endif %}
+
+</form>
+
+<!-- Поля параметрів для запиту 1 -->
+{% if query_type == 'query1' %}
+<h2>Запит 1: Дані про вантажоперевезення</h2>
+<form method="post">
+    <input type="hidden" name="query" value="query1">
+    <label for="vehicle_name">Назва автомобіля:</label>
+    <input type="text" id="vehicle_name" name="vehicle_name" required><br>
+
+    <label for="start_date">Початок періоду:</label>
+    <input type="date" id="start_date" name="start_date" required><br>
+
+    <label for="end_date">Кінець періоду:</label>
+    <input type="date" id="end_date" name="end_date" required><br>
+
+    <button type="submit">Виконати запит</button>
+</form>
+{% endif %}
+
+<!-- Результати для query 2 -->
+{% if query_type == 'query2' %}
+<h2>Запит 2: Дані про гаражі</h2>
+<form method="post">
+    <input type="hidden" name="query" value="query2">
+
+</form>
+
+{% if search_results %}
+<h3>Результати:</h3>
+<h4>Загальні дані:</h4>
+<p>Загальна кількість транспортних засобів із гаражами: {{ total_with_garage }}</p>
+
+<h4 style="color: white">Кількість за категоріями:</h4>
+<table class="table table-striped table-bordered" border="1">
+    <thead>
+        <tr>
+            <th>Категорія</th>
+            <th>З гаражами</th>
+            <th>Без гаражів</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.category }}</td>
+            <td>{{ row.with_garage }}</td>
+            <td>{{ row.without_garage }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+<!-- Виведення помилок -->
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<!-- Відображення результатів query 1, тільки якщо вибрано query1 -->
+{% if query_type == 'query1' and search_results %}
+<h2>Результати для запиту 1:</h2>
+<table class="table table-striped table-bordered" border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>ID автомобіля</th>
+            <th>Автомобіль</th>
+            <th>Опис вантажу</th>
+            <th>Дата відправлення</th>
+            <th>Дата прибуття</th>
+            <th>Місце відправлення</th>
+            <th>Місце прибуття</th>
+            <th>Дистанція (км)</th>
+            <th>Вага (т)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.vehicle_id }}</td>
+            <td>{{ row.vehicle_name }}</td>
+            <td>{{ row.cargo_description }}</td>
+            <td>{{ row.departure_date }}</td>
+            <td>{{ row.arrival_date }}</td>
+            <td>{{ row.departure_location }}</td>
+            <td>{{ row.arrival_location }}</td>
+            <td>{{ row.distance_km }}</td>
+            <td>{{ row.weight_tons }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Форма для Запиту 3 -->
+        {% if query_type == 'query3' %}
+        <h2>Запит 3: Пробіг автотранспорту</h2>
+        <form method="post">
+            <input type="hidden" name="query" value="query3">
+            <div class="mb-3">
+                <label for="vehicle_category" class="form-label">Категорія транспорту:</label>
+                <select id="vehicle_category" name="vehicle_category" class="form-select" required>
+                    <option value="" disabled selected>Оберіть категорію</option>
+                    <option value="Легковий">Легковий</option>
+                    <option value="Вантажний">Вантажний</option>
+                    <option value="Автобус">Автобус</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="mileage_date" class="form-label">Дата пробігу:</label>
+                <input type="date" id="mileage_date" name="mileage_date" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="year" class="form-label">Рік:</label>
+                <input type="number" id="year" name="year" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Виконати запит</button>
+        </form>
+        {% if search_results %}
+        <h3>Результати:</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Категорія</th>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Реєстраційний номер</th>
+                    <th>Дата</th>
+                    <th>Пробіг (км)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in search_results %}
+                <tr>
+                    <td>{{ row.Category }}</td>
+                    <td>{{ row.Brand }}</td>
+                    <td>{{ row.Model }}</td>
+                    <td>{{ row.RegistrationNumber }}</td>
+                    <td>{{ row.Date }}</td>
+                    <td>{{ row.Mileage }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Немає даних для відображення.</p>
+        {% endif %}
+        {% endif %}
+
+<!-- Форма для Запиту 4 -->
+{% if query_type == 'query4' %}
+<h2>Запит 4: Використання частин за категоріями</h2>
+<p>Натисніть кнопку для виконання запиту.</p>
+<form method="post">
+    <input type="hidden" name="query" value="query4">
+</form>
+
+{% if search_results %}
+<h3>Результати:</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Категорія</th>
+            <th>Вузол/Агрегат</th>
+            <th>Загальна кількість частин</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.vehicle_category }}</td>
+            <td>{{ row.repaired_part }}</td>
+            <td>{{ row.total_quantity }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Немає даних для відображення.</p>
+{% endif %}
+{% endif %}
+
+<!-- Форма для Запиту 5 -->
+{% if query_type == 'query5' %}
+<h2>Запит 5: Інформація про маршрути</h2>
+<p>Заповніть форму для пошуку інформації про маршрути за номером і датою.</p>
+<form method="post">
+    <input type="hidden" name="query" value="query5">
+    <div class="form-group">
+        <label for="route_number">Номер маршруту:</label>
+        <input type="text" id="route_number" name="route_number" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="start_date">Початкова дата:</label>
+        <input type="date" id="start_date" name="start_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="end_date">Кінцева дата:</label>
+        <input type="date" id="end_date" name="end_date" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Виконати запит</button>
+</form>
+
+{% if search_results %}
+<h3>Результати:</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Номер маршруту</th>
+            <th>Номер транспортного засобу</th>
+            <th>Ім'я водія</th>
+            <th>Кількість пасажирів</th>
+            <th>Дата розподілу</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.route_number }}</td>
+            <td>{{ row.vehicle_number }}</td>
+            <td>{{ row.driver_name }}</td>
+            <td>{{ row.passenger_count }}</td>
+            <td>{{ row.distribution_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Немає даних для відображення.</p>
+{% endif %}
+{% endif %}
+
+<!-- Форма для Запиту 6 -->
+{% if query_type == 'query6' %}
+<h2>Запит 6: Ремонти автомобілів</h2>
+<p>Знайдіть інформацію про ремонти автомобілів за категорією, маркою, або ID у заданому періоді.</p>
+<form method="post">
+    <input type="hidden" name="query" value="query6">
+    <div class="form-group">
+        <label for="start_date">Початкова дата:</label>
+        <input type="date" id="start_date" name="start_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="end_date">Кінцева дата:</label>
+        <input type="date" id="end_date" name="end_date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="car_category">Категорія автомобіля:</label>
+        <input type="text" id="car_category" name="car_category" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="car_brand">Марка автомобіля:</label>
+        <input type="text" id="car_brand" name="car_brand" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="car_id">ID автомобіля:</label>
+        <input type="number" id="car_id" name="car_id" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Виконати запит</button>
+</form>
+
+{% if search_results %}
+<h3>Результати:</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Категорія</th>
+            <th>Марка</th>
+            <th>Модель</th>
+            <th>Кількість ремонтів</th>
+            <th>Загальна вартість ремонтів</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.car_category }}</td>
+            <td>{{ row.car_brand }}</td>
+            <td>{{ row.car_model }}</td>
+            <td>{{ row.repair_count }}</td>
+            <td>{{ row.total_cost }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Немає даних для відображення.</p>
+{% endif %}
+{% endif %}
+
+<!-- Відображення результатів query 7 -->
+        {% if query_type == 'query7' and search_results %}
+        <h3 class="mt-4">Результати для запиту 7:</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Модель</th>
+                    <th>Серійний номер</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                    <th>Опис</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in search_results %}
+                <tr>
+                    <td>{{ row.equipment_type }}</td>
+                    <td>{{ row.model }}</td>
+                    <td>{{ row.serial_number }}</td>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif query_type == 'query7' and error %}
+
+        {% endif %}
+
+<!-- Поля для запиту 8 -->
+    {% if query_type == 'query8' %}
+    <div class="form-group">
+        <h4 style="color: white">Запит 8: Дані про роботи фахівця</h4>
+        <label for="specialist_name">Ім'я фахівця:</label>
+        <input type="text" id="specialist_name" name="specialist_name" class="form-control" value="{{ request.form.get('specialist_name', '') }}" required>
+
+        <label for="start_date">Початкова дата:</label>
+        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ request.form.get('start_date', '') }}" required>
+
+        <label for="end_date">Кінцева дата:</label>
+        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ request.form.get('end_date', '') }}" required>
+
+        <label for="car_license_plate">Номерний знак автомобіля (опціонально):</label>
+        <input type="text" id="car_license_plate" name="car_license_plate" class="form-control" value="{{ request.form.get('car_license_plate', '') }}">
+
+        <button type="submit" class="btn btn-primary mt-3">Виконати запит</button>
+    </div>
+    {% endif %}
+</form>
+
+<!-- Результати для запиту 8 -->
+{% if query_type == 'query8' and search_results %}
+<h2>Результати для запиту 8:</h2>
+<table class="table table-striped table-bordered" border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ім'я фахівця</th>
+            <th>Номерний знак автомобіля</th>
+            <th>Марка автомобіля</th>
+            <th>Опис роботи</th>
+            <th>Дата роботи</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.specialist_name }}</td>
+            <td>{{ row.car_license_plate }}</td>
+            <td>{{ row.car_model }}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ row.job_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif query_type == 'query8' and not search_results %}
+    <p>Немає результатів для відображення за обраними параметрами.</p>
+{% endif %}
+
+  <!-- Поля для запиту 9 (якщо потрібно) -->
+    {% if query_type == 'query9' %}
+    <div class="form-group">
+        <h4 style="color: white">Запит 9: Водії з закріпленим транспортом</h4>
+    </div>
+    {% endif %}
+</form>
+
+<!-- Результати для запиту 9 -->
+{% if query_type == 'query9' and search_results %}
+<h2>Результати для запиту 9:</h2>
+<table class="table table-striped table-bordered" border="1">
+    <thead>
+        <tr>
+            <th>Ідентифікатор водія</th>
+            <th>Ім'я водія</th>
+            <th>Прізвище водія</th>
+            <th>Номер водійського посвідчення</th>
+            <th>Досвід роботи</th>
+            <th>Марка транспорту</th>
+            <th>Модель транспорту</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in search_results %}
+        <tr>
+            <td>{{ row.driver_id }}</td>
+            <td>{{ row.first_name }}</td>
+            <td>{{ row.last_name }}</td>
+            <td>{{ row.license_number }}</td>
+            <td>{{ row.experience }}</td>
+            <td>{{ row.brand }}</td>
+            <td>{{ row.model }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif query_type == 'query9' and not search_results %}
+    <p>Немає результатів для відображення.</p>
+{% endif %}
+
+ <!-- Результати для запиту 10 -->
+{% if query_type == 'query10' %}
+    {% if search_results %}
+        <h2>Результати запиту 10:</h2>
+
+        <!-- Таблиця для Employee -->
+        <h3>Працівники</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID Працівника</th>
+                    <th>Ім'я</th>
+                    <th>Прізвище</th>
+                    <th>Посада</th>
+                    <th>Номер бригади</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in search_results.employee_data %}
+                <tr>
+                    <td>{{ emp.id }}</td>
+                    <td>{{ emp.first_name }}</td>
+                    <td>{{ emp.last_name }}</td>
+                    <td>{{ emp.position }}</td>
+                    <td>{{ emp.team_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Таблиця для Team -->
+        <h3>Бригади</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID Бригади</th>
+                    <th>Назва Бригади</th>
+                    <th>Бригадир</th>
+                    <th>Майстер</th>
+                    <th>Керівник цеху</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in search_results.team_data %}
+                <tr>
+                    <td>{{ team.team_id }}</td>
+                    <td>{{ team.team_name }}</td>
+                    <td>{{ team.team_leader }}</td>
+                    <td>{{ team.master }}</td>
+                    <td>{{ team.site_manager }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Немає даних для відображення.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

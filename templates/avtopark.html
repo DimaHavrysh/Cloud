@@ -1,0 +1,186 @@
+{% extends 'home_page.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Автопарк підприємства</h1>
+
+    <!-- Форма пошуку -->
+    <form method="POST" action="{{ url_for('avtopark') }}" class="mb-4">
+        <div class="form-group">
+            <label for="vehicle_category">Категорія транспортного засобу:</label>
+            <input type="text" class="form-control" id="vehicle_category" name="vehicle_category" placeholder="Пошук за категорією транспортного засобу">
+        </div>
+        <div class="form-group">
+            <label for="vehicle_registration_number">Державний номер:</label>
+            <input type="text" class="form-control" id="vehicle_registration_number" name="vehicle_registration_number" placeholder="Пошук за державним номером">
+        </div>
+        <div class="form-group">
+            <label for="mileage_date">Дата пробігу:</label>
+            <input type="date" class="form-control" id="mileage_date" name="mileage_date">
+        </div>
+        <button type="submit" class="btn btn-primary">Пошук</button>
+    </form>
+
+    <!-- Таблиця для відображення автопарку -->
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Категорія</th>
+                <th>Марка</th>
+                <th>Модель</th>
+                <th>Державний номер</th>
+                <th>Дата пробігу</th>
+                <th>Пробіг (км)</th>
+                {% if is_admin_or_owner %}
+                <th>Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if fleet_data %}
+                {% for vehicle in fleet_data %}
+                <tr>
+                    <td>{{ vehicle.vehicle_category }}</td>
+                    <td>{{ vehicle.vehicle_brand }}</td>
+                    <td>{{ vehicle.vehicle_model }}</td>
+                    <td>{{ vehicle.vehicle_registration_number }}</td>
+                    <td>{{ vehicle.mileage_date if vehicle.mileage_date else 'Не вказано' }}</td>
+                    <td>{{ vehicle.total_mileage }}</td>
+                    {% if is_admin_or_owner %}
+                    <td>
+                        <!-- Кнопка редагування -->
+                        <a href="#editModal{{ vehicle.id }}" class="btn btn-warning btn-sm" data-toggle="modal">Редагувати</a>
+
+                        <!-- Кнопка видалення -->
+                        <a href="{{ url_for('delete_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Ви впевнені, що хочете видалити цей транспортний засіб?');">Видалити</a>
+                    </td>
+                    {% endif %}
+                </tr>
+
+                <!-- Модальне вікно редагування -->
+                <div class="modal fade" id="editModal{{ vehicle.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ vehicle.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ vehicle.id }}">Редагувати транспортний засіб</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}" method="POST">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="vehicle_category" style="color: black">Категорія</label>
+                                        <input type="text" class="form-control" id="vehicle_category" name="vehicle_category" value="{{ vehicle.vehicle_category }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vehicle_brand" style="color: black">Марка</label>
+                                        <input type="text" class="form-control" id="vehicle_brand" name="vehicle_brand" value="{{ vehicle.vehicle_brand }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vehicle_model" style="color: black">Модель</label>
+                                        <input type="text" class="form-control" id="vehicle_model" name="vehicle_model" value="{{ vehicle.vehicle_model }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="vehicle_registration_number" style="color: black">Державний номер</label>
+                                        <input type="text" class="form-control" id="vehicle_registration_number" name="vehicle_registration_number" value="{{ vehicle.vehicle_registration_number }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="mileage_date" style="color: black">Дата пробігу</label>
+                                        <input type="date" class="form-control" id="mileage_date" name="mileage_date" value="{{ vehicle.mileage_date }}">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">Даних не знайдено</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+<!-- Результати пошуку -->
+    {% if search_results %}
+    <div class="mt-5">
+        <h3>Результати пошуку</h3>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Категорія</th>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Державний номер</th>
+                    <th>Дата пробігу</th>
+                    <th>Пробіг (км)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in search_results %}
+                <tr>
+                    <td>{{ result.vehicle_category }}</td>
+                    <td>{{ result.vehicle_brand }}</td>
+                    <td>{{ result.vehicle_model }}</td>
+                    <td>{{ result.vehicle_registration_number }}</td>
+                    <td>{{ result.mileage_date if result.mileage_date else 'Не вказано' }}</td>
+                    <td>{{ result.total_mileage }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <!-- Кнопка додавання нового транспортного засобу -->
+    {% if is_admin_or_owner %}
+    <a href="#addModal" class="btn btn-success" data-toggle="modal">Додати транспортний засіб</a>
+
+    <!-- Модальне вікно додавання -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Додати транспортний засіб</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('add_vehicle') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="vehicle_category" style="color: black">Категорія</label>
+                            <input type="text" class="form-control" id="vehicle_category" name="vehicle_category" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_brand" style="color: black">Марка</label>
+                            <input type="text" class="form-control" id="vehicle_brand" name="vehicle_brand" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_model" style="color: black">Модель</label>
+                            <input type="text" class="form-control" id="vehicle_model" name="vehicle_model" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle_registration_number" style="color: black">Державний номер</label>
+                            <input type="text" class="form-control" id="vehicle_registration_number" name="vehicle_registration_number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mileage_date" style="color: black">Дата пробігу</label>
+                            <input type="date" class="form-control" id="mileage_date" name="mileage_date">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                        <button type="submit" class="btn btn-primary">Додати</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
