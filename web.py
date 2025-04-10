@@ -9,10 +9,11 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Потрібно для роботи з сесіями
 
 # Налаштування параметрів підключення до бази даних MySQL
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = 'yamanote.proxy.rlwy.net'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '1234'
-app.config['MYSQL_DB'] = 'kursova'
+app.config['MYSQL_PASSWORD'] = 'RVbjplKtkutAppRliRMvQiBMMcEMhNJQ'
+app.config['MYSQL_DB'] = 'cloud'
+app.config['MYSQL_PORT'] = '17675'
 
 # Ініціалізація MySQL
 mysql = MySQL(app)
