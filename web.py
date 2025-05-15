@@ -9,11 +9,11 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Потрібно для роботи з сесіями
 
 # Налаштування параметрів підключення до бази даних MySQL
-app.config['MYSQL_HOST'] = 'yamanote.proxy.rlwy.net'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'RVbjplKtkutAppRliRMvQiBMMcEMhNJQ'
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'dima'
+app.config['MYSQL_PASSWORD'] = '1234'
 app.config['MYSQL_DB'] = 'cloud'
-app.config['MYSQL_PORT'] = 17675
+app.config['MYSQL_PORT'] = 3306
 
 # Ініціалізація MySQL
 mysql = MySQL(app)
@@ -1738,4 +1738,4 @@ def edit_team(team_id):
     return redirect(url_for('pidlegli', info_type=1))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
